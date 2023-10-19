@@ -1,5 +1,5 @@
 # Python-ORM
-Python ORM course at SoftUni - September 2023
+Python ORM course at SoftUni - October 2023
 
 [Click Here for more information about the course Python ORML](https://softuni.bg/trainings/4253/python-orm-october-2023)
 
