@@ -289,8 +289,79 @@ CREATE TABLE employees_employee (
     works_full_time = models.BooleanField(default=True)
     job_level = models.CharField(max_length=30, default='Junior')
     business_account = models.CharField(max_length=30, unique=True)
-```
+  ```
+**Null vs Blank**
 
+- null - database-related
+  - **False** by default. If **True**, empty values will be stored as **NULL**
+  - Use for **non-string fields** such as integers, Booleans, and dates
+- blank - validation-related
+  - **False** by default. If **True**, the field is allowed to be blank
+  ```
+  class Employee(models.Model):
+    ...
+    second_email_address = models.EmailField(blank=True)
+    photo = models.URLField(default='default-picture-url', blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+  ```
+**Primary Key Option**
+
+- primary_key
+  - If True, the field becomes the primary key for the model
+  - Used to override the default primary-key behavior
+- The primary key field is read-only
+- **Note**: If you change the value of the primary key on an existing
+object and then save it, a new object will be created alongside
+the old one
+
+- Choices Option (1)
+  - choices
+    - Use a sequence consisting of iterables of exactly two items to create choices
+    - A new migration is automatically created each time the list of choices changes
+
+**Choices Option (2)**
+
+- It appears as a select box with the created choices instead of a standard text field
+
+**Verbose Name Option**
+
+- verbose_name
+  - Most field types take it as an optional first positional argument
+  - If it isn't given, Django automatically creates it using the field's attribute name, converting underscores to spaces
+  ```
+  class Employee(models.Model):
+    first_name = models.CharField(
+    "First Name", max_length=30)
+    last_name = models.CharField(
+    "Family Name", max_length=40)
+    email_address = models.EmailField(
+    unique=True)
+  ```
+**Editable Option**
+
+- editable
+  - Trueby default
+  - If False, it modifies the field so:
+    - It is not able to be filled/ edited
+    - It disappears from all forms
+  - Used to hide some fields such as encrypted code, verifications, etc.
+ 
+**Models Migration Basics**
+
+- Use models to create a database schema for your app
+- Use migrations to propagate changes you make in your models (add, delete, modify fields, etc.)
+  - First, create migrations
+    - **makemigrations** command
+  - Next, apply those changes to the database
+    - **migrate** command
+   
+  **Migrations**
+
+  - Use to add changes made to the models into the database
+  - Django creates migrations for you
+    - Just type the appropriate commands in terminal
+  - You can use many database systems with Django
+    - However, PostgreSQL is the most capable of all in terms of schema support
 
 
 
