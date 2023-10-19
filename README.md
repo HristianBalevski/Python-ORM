@@ -5,6 +5,8 @@ Python ORM course at SoftUni - October 2023
 
 ![exhausted-young-male-software-developer-sleeping-by-technology-while-leaning-desk](https://github.com/HristianBalevski/Python-ORM/assets/114162692/961bbbcc-673b-4e53-8426-fd8e006bed46)
 
+## 01.ORM INTRODUCTION
+
 ## What is ORM?
 
 - Object-Relational Mapping (ORM) allows manipulating databases using common classes and objects
@@ -145,4 +147,150 @@ Python ORM course at SoftUni - October 2023
 - An interactive command-line interface shell environment
 - Runs the command-line client for specified database, or the default database
 - A very useful tool for SQL database debugging when working on a Django application
+
+---
+## 02.DJANGO MODELS BASICS
+
+- Models define the structure of stored data
+  - Containing the essential fields and behaviors of the data
+- Each model maps to a single database table
+- Django Model is a Python class that subclasses **django.db.models.Model**
+- Each attribute of the model represents a database field
+
+**Models Benefits**
+
+- Work with database data using Python code
+  - Don't have to write low-level SQL queries
+  - Focus on the data and the business logic
+  - Django automatically creates the needed queries and executes them
+ 
+**Defining a Model**
+
+- Еach Django application has a models.pyfile
+- Create your model there. You need to subclass models.Model
+```
+from django.db import models
+
+
+class Task(models.Model):
+    title = models.CharField(max_length=50)
+    text = models.TextField()
+```
+**Fields**
+
+- The most important and required part of a model
+  - Field names should not conflict with reserved words
+  - Field names cannot have more than one underscore in a row and cannot end with an underscore
+
+- Each field is an instance of the appropriate Field class
+```
+class Employee(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=40)
+```
+**Field Types**
+
+- They determine the column type in a database table (e.g., INTEGER, VARCHAR, TEXT)
+- Django has dozens of built-in field types
+- Technically, they are defined in **django.db.models.fields**
+- For convenience they're imported into **django.db.models**
+```
+from django.db import models
+
+
+class Employee(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=40)
+```
+**String Field Types**
+
+- CharField
+  - Appropriate for small- to large-sized strings
+  - Has one extra argument - max_length(required for all database backends included with Django except PostgreSQL)
+ 
+- TextField
+  - Appropriate for large texts
+  - When specifying max length, it won't be enforced at the model or database level
+
+- IntegerField
+  - Stores integers
+ 
+- PositiveIntegerField
+  - Stores integers that could be either positive or zero
+
+- FloatField
+  - Stores floating-point numbers
+
+- DecimalField
+  - Stores fixed-precision decimal numbers
+  - Two required arguments - **max_digits** and **decimal_place**
+ 
+**Date/Time Field Types**
+
+- DateField - stores a date
+- TimeField - stores a time
+- DateTimeField - stores a date and a time
+- They have two extra field arguments (not required):
+  - auto_now
+    - Sets the field to now every time the object is saved
+  - auto_now_add
+    - Sets the field to now when the object is first created
+   
+**More Useful Field Types**
+
+- BooleanField
+  - Stores Booleans - either Trueor False
+- URLField
+  - CharField for URLs
+  - max_lengthis 200 by default
+- EmailField
+  - CharField that **checks** if the value is a **valid email address**
+  - max_lengthis 254 by default
+- Field Arguments
+  - A certain set of field-specific or common arguments
+    - max_length argument specifies the size of the VARCHAR field. It is a field-specific, required argument
+    - null, blank, default, primary_key, etc. are **common optional** arguments
+- If you do not specify primary_key=True for any field in your model, Django will automatically add an IntegerField to hold the primary key
+
+**Model vs SQL Query**
+
+- Creating model **Employee** in the app **employees**
+```
+class Employee(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=40)
+```
+- It will create a database table like the following
+```
+CREATE TABLE employees_employee (
+"id" BIGINT NOT NULL PRIMARY KEY,
+"first_name" VARCHAR(30) NOT NULL,
+"last_name" VARCHAR(40) NOT NULL
+);
+```
+
+**Model Field Options in Details**
+
+- Field Options
+  - Common SQL constraints but in Python code
+  - Available for all field types
+  - All of them are optional
+ 
+**Default vs Unique**
+
+- default
+  - A default value or a default callable object for the field
+- unique
+  - False by default
+  - If True, this field must be unique for the table column
+  ```
+  class Employee(models.Model):
+    ...
+    works_full_time = models.BooleanField(default=True)
+    job_level = models.CharField(max_length=30, default='Junior')
+    business_account = models.CharField(max_length=30, unique=True)
+```
+
+
+
 
