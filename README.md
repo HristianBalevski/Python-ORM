@@ -363,5 +363,234 @@ the old one
   - You can use many database systems with Django
     - However, PostgreSQL is the most capable of all in terms of schema support
 
+---
+# 03.DJANGO MIRGRATIONS AND DJANGO ADMIN
 
+**Django Migrations Basics Overview**
+
+- Files with Python code that:
+  - Propagate changes you make to your models into the database schema
+  - Designed to be mostly automatic
+- Basic Commands
+  - makemigrations
+    - Packing all changes into migration files
+  - migrate
+    - Applying migrations to the database
+    - Unapplying migrations
+   
+**Migration Files**
+
+- Python files, written in a declarative style
+```
+from django.db import migrations, models
+
+class Migration(migrations.Migration):
+  initial = True
+dependencies = []
+operations = [migrations.CreateModel(
+  name='Employee',
+  fields=[('id', models.BigAutoField(auto_created=True,
+primary_key=True, serialize=False, verbose_name='ID')),
+    ('first_name', models.CharField(max_length=30)),
+    ...])]
+```
+- It is possible to write them manually if needed
+
+**Applying Migrations**
+
+- To apply all migrations from all apps
+```
+python manage.py migrate
+```
+- To apply all migrations from one app
+```
+python manage.py migrate main_app
+```
+- To apply specific migration
+```
+python manage.py migrate main_app 0001
+```
+**Reversing Migrations**
+
+- To revert to a certain migration, pass the app name and the number of the migration you need to revert to
+```
+python manage.py migrate main_app 0001
+```
+- To reverse all already applied migrations, use the app name and the name zero as parameters
+```
+python manage.py migrate main_app zero
+```
+- Note: If a migration contains any irreversible operations, attempting to reverse it will raise IrreversibleError
+
+**Showing Migrations**
+
+- Listing project's migrations and their status
+```
+python manage.py showmigrations
+```
+  - Apps without migrations are also listed but have no migrations printed after them
+- Listing migrations and their status for a certain app
+```
+python manage.py showmigrations main_app
+```
+- You can choose a format to list: --list or-l
+```
+python manage.py showmigrations --list
+```
+**Optimizing Migrations Number and Size**
+
+- squashmigrations command
+  - Reducing an existing set of (many) migrations
+    - down to one or sometimes a few migrations
+    - still representing the same changes
+    ```
+    python manage.py squashmigrations main_app 0238
+    ```
+  - You need to pass the app name and the migration number/name
+    - all previous migrations will be squashed
+   
+**SQL Representation of a Migration**
+
+- sqlmigrate command
+  - Prints the SQL for the named migration
+    - requires an active database connection
+    - must be generated against a copy of the database on which later to be applied on
+    ```
+    python manage.py sqlmigrate main_app 0001_initial
+    ```
+  - You need to pass the app name and the migration number/name
+
+**Custom/Data Migrations**
+
+- Data Migrations
+  - Migrations that alter data
+  - Best written as separate migrations
+  - Sitting alongside your schema migrations
+- Use data migrations to change
+ - the data in the database itself
+ - in conjunction with the schema if you need that
+
+**Custom/Data Migrations (2)**
+
+- Django cannot automatically generate Data Migrations
+  - It is not very hard to write them manually
+- Migration files in Django are made up of Operations
+  - the main operation to use for data migrations is RunPython
+
+**Creating an Empty Migration**
+
+- By making an empty migration file Django will
+  - put the file in the right place
+  - suggest a name
+  - add dependencies
+  ```
+  python manage.py makemigrations --empty main_app
+  ```
+- You need to pass the app name
+
+**Empty Migration**
+
+- The empty migration file would look like this:
+```
+from django.db import migrations
+
+
+class Migration(migrations.Migration):
+  dependencies = [
+  ("main_app", "0002_employee_full_name"),
+  ]
+  operations = []
+```
+**RunPython Usage**
+
+- Create a function and have RunPython use it
+- RunPython expects a callable which takes two arguments app
+  - a registry of installed applications that
+    - stores configuration
+    - provides introspection
+    - maintains a list of available models
+  - has the historical versions of all models
+- SchemaEditor
+  - exposes operations as methods and turns code into SQL
+
+**Django Admin Site Introduction**
+
+- It is a built-in admin interface
+  - Where trusted users can manage site content
+ 
+**Access Django Admin Site**
+
+- First, create a superuser to log in with
+  ```
+  python manage.py createsuperuser
+  ```
+- Then, start the server and navigate to the admin site
+
+**Register Models**
+
+- Use the ModelAdminclass
+  - It represents the model in the admin site
+ 
+```
+from django.contrib import admin
+from main_app.models import Employee
+
+@admin.register(Employee)
+class EmployeeAdmin(admin.ModelAdmin):
+pass
+```
+
+**Customizing Django Admin Site**
+
+- Use the ModelAdminclass
+  - Use its options to customize the admin interface
+ 
+  ```
+  from django.contrib import admin
+  from main_app.models import Employee
+  @admin.register(Employee)
+  class EmployeeAdmin(admin.ModelAdmin):
+  …
+  ```
+  **ModelAdmin Options (1)**
+
+  - Display the model fields
+    ```
+    class EmployeeAdmin(admin.ModelAdmin):
+    list_display = ['job_title', 'first_name', 'email_address']
+    ```
+**ModelAdmin Options (2)**
+
+- Add filters to the models
+  ```
+  class EmployeeAdmin(admin.ModelAdmin):
+  list_filter = ['job_level']
+  ```
+
+**ModelAdmin Options (3)**
+
+- Add search box with field names that will be searched
+  ```
+  class EmployeeAdmin(admin.ModelAdmin):
+  search_fields = ['email_address']
+  ```
+**ModelAdmin Options (4)**
+
+- Make layout changes on "Add" and "Change" pages
+  ```
+  class EmployeeAdmin(admin.ModelAdmin):
+    fields = [('first_name', 'last_name'), 'email_address']
+  ```
+**ModelAdmin Options (5)**
+
+- Control the layout of "Add" and "Change" pages
+  ```
+  fieldsets = (
+    ('Personal info',
+      {'fields': (...)}),
+    ('Advanced options',
+      {'classes': ('collapse',),
+        'fields': (...),}),
+    )
+  ```
 
