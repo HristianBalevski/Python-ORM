@@ -1,9 +1,11 @@
 # Python-ORM
-This repository contains information about my course Python ORM - September 2023
+Python ORM course at SoftUni - October 2023
 
 [Click Here for more information about the course Python ORML](https://softuni.bg/trainings/4253/python-orm-october-2023)
 
 ![exhausted-young-male-software-developer-sleeping-by-technology-while-leaning-desk](https://github.com/HristianBalevski/Python-ORM/assets/114162692/961bbbcc-673b-4e53-8426-fd8e006bed46)
+
+## 01.ORM INTRODUCTION
 
 ## What is ORM?
 
@@ -145,4 +147,450 @@ This repository contains information about my course Python ORM - September 2023
 - An interactive command-line interface shell environment
 - Runs the command-line client for specified database, or the default database
 - A very useful tool for SQL database debugging when working on a Django application
+
+---
+## 02.DJANGO MODELS BASICS
+
+- Models define the structure of stored data
+  - Containing the essential fields and behaviors of the data
+- Each model maps to a single database table
+- Django Model is a Python class that subclasses **django.db.models.Model**
+- Each attribute of the model represents a database field
+
+**Models Benefits**
+
+- Work with database data using Python code
+  - Don't have to write low-level SQL queries
+  - Focus on the data and the business logic
+  - Django automatically creates the needed queries and executes them
+ 
+**Defining a Model**
+
+- Еach Django application has a models.pyfile
+- Create your model there. You need to subclass models.Model
+```
+from django.db import models
+
+
+class Task(models.Model):
+    title = models.CharField(max_length=50)
+    text = models.TextField()
+```
+**Fields**
+
+- The most important and required part of a model
+  - Field names should not conflict with reserved words
+  - Field names cannot have more than one underscore in a row and cannot end with an underscore
+
+- Each field is an instance of the appropriate Field class
+```
+class Employee(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=40)
+```
+**Field Types**
+
+- They determine the column type in a database table (e.g., INTEGER, VARCHAR, TEXT)
+- Django has dozens of built-in field types
+- Technically, they are defined in **django.db.models.fields**
+- For convenience they're imported into **django.db.models**
+```
+from django.db import models
+
+
+class Employee(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=40)
+```
+**String Field Types**
+
+- CharField
+  - Appropriate for small- to large-sized strings
+  - Has one extra argument - max_length(required for all database backends included with Django except PostgreSQL)
+ 
+- TextField
+  - Appropriate for large texts
+  - When specifying max length, it won't be enforced at the model or database level
+
+- IntegerField
+  - Stores integers
+ 
+- PositiveIntegerField
+  - Stores integers that could be either positive or zero
+
+- FloatField
+  - Stores floating-point numbers
+
+- DecimalField
+  - Stores fixed-precision decimal numbers
+  - Two required arguments - **max_digits** and **decimal_place**
+ 
+**Date/Time Field Types**
+
+- DateField - stores a date
+- TimeField - stores a time
+- DateTimeField - stores a date and a time
+- They have two extra field arguments (not required):
+  - auto_now
+    - Sets the field to now every time the object is saved
+  - auto_now_add
+    - Sets the field to now when the object is first created
+   
+**More Useful Field Types**
+
+- BooleanField
+  - Stores Booleans - either Trueor False
+- URLField
+  - CharField for URLs
+  - max_lengthis 200 by default
+- EmailField
+  - CharField that **checks** if the value is a **valid email address**
+  - max_lengthis 254 by default
+- Field Arguments
+  - A certain set of field-specific or common arguments
+    - max_length argument specifies the size of the VARCHAR field. It is a field-specific, required argument
+    - null, blank, default, primary_key, etc. are **common optional** arguments
+- If you do not specify primary_key=True for any field in your model, Django will automatically add an IntegerField to hold the primary key
+
+**Model vs SQL Query**
+
+- Creating model **Employee** in the app **employees**
+```
+class Employee(models.Model):
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=40)
+```
+- It will create a database table like the following
+```
+CREATE TABLE employees_employee (
+"id" BIGINT NOT NULL PRIMARY KEY,
+"first_name" VARCHAR(30) NOT NULL,
+"last_name" VARCHAR(40) NOT NULL
+);
+```
+
+**Model Field Options in Details**
+
+- Field Options
+  - Common SQL constraints but in Python code
+  - Available for all field types
+  - All of them are optional
+ 
+**Default vs Unique**
+
+- default
+  - A default value or a default callable object for the field
+- unique
+  - False by default
+  - If True, this field must be unique for the table column
+  ```
+  class Employee(models.Model):
+    ...
+    works_full_time = models.BooleanField(default=True)
+    job_level = models.CharField(max_length=30, default='Junior')
+    business_account = models.CharField(max_length=30, unique=True)
+  ```
+**Null vs Blank**
+
+- null - database-related
+  - **False** by default. If **True**, empty values will be stored as **NULL**
+  - Use for **non-string fields** such as integers, Booleans, and dates
+- blank - validation-related
+  - **False** by default. If **True**, the field is allowed to be blank
+  ```
+  class Employee(models.Model):
+    ...
+    second_email_address = models.EmailField(blank=True)
+    photo = models.URLField(default='default-picture-url', blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+  ```
+**Primary Key Option**
+
+- primary_key
+  - If True, the field becomes the primary key for the model
+  - Used to override the default primary-key behavior
+- The primary key field is read-only
+- **Note**: If you change the value of the primary key on an existing
+object and then save it, a new object will be created alongside
+the old one
+
+- Choices Option (1)
+  - choices
+    - Use a sequence consisting of iterables of exactly two items to create choices
+    - A new migration is automatically created each time the list of choices changes
+
+**Choices Option (2)**
+
+- It appears as a select box with the created choices instead of a standard text field
+
+**Verbose Name Option**
+
+- verbose_name
+  - Most field types take it as an optional first positional argument
+  - If it isn't given, Django automatically creates it using the field's attribute name, converting underscores to spaces
+  ```
+  class Employee(models.Model):
+    first_name = models.CharField(
+    "First Name", max_length=30)
+    last_name = models.CharField(
+    "Family Name", max_length=40)
+    email_address = models.EmailField(
+    unique=True)
+  ```
+**Editable Option**
+
+- editable
+  - Trueby default
+  - If False, it modifies the field so:
+    - It is not able to be filled/ edited
+    - It disappears from all forms
+  - Used to hide some fields such as encrypted code, verifications, etc.
+ 
+**Models Migration Basics**
+
+- Use models to create a database schema for your app
+- Use migrations to propagate changes you make in your models (add, delete, modify fields, etc.)
+  - First, create migrations
+    - **makemigrations** command
+  - Next, apply those changes to the database
+    - **migrate** command
+   
+  **Migrations**
+
+  - Use to add changes made to the models into the database
+  - Django creates migrations for you
+    - Just type the appropriate commands in terminal
+  - You can use many database systems with Django
+    - However, PostgreSQL is the most capable of all in terms of schema support
+
+---
+# 03.DJANGO MIRGRATIONS AND DJANGO ADMIN
+
+**Django Migrations Basics Overview**
+
+- Files with Python code that:
+  - Propagate changes you make to your models into the database schema
+  - Designed to be mostly automatic
+- Basic Commands
+  - makemigrations
+    - Packing all changes into migration files
+  - migrate
+    - Applying migrations to the database
+    - Unapplying migrations
+   
+**Migration Files**
+
+- Python files, written in a declarative style
+```
+from django.db import migrations, models
+
+class Migration(migrations.Migration):
+  initial = True
+dependencies = []
+operations = [migrations.CreateModel(
+  name='Employee',
+  fields=[('id', models.BigAutoField(auto_created=True,
+primary_key=True, serialize=False, verbose_name='ID')),
+    ('first_name', models.CharField(max_length=30)),
+    ...])]
+```
+- It is possible to write them manually if needed
+
+**Applying Migrations**
+
+- To apply all migrations from all apps
+```
+python manage.py migrate
+```
+- To apply all migrations from one app
+```
+python manage.py migrate main_app
+```
+- To apply specific migration
+```
+python manage.py migrate main_app 0001
+```
+**Reversing Migrations**
+
+- To revert to a certain migration, pass the app name and the number of the migration you need to revert to
+```
+python manage.py migrate main_app 0001
+```
+- To reverse all already applied migrations, use the app name and the name zero as parameters
+```
+python manage.py migrate main_app zero
+```
+- Note: If a migration contains any irreversible operations, attempting to reverse it will raise IrreversibleError
+
+**Showing Migrations**
+
+- Listing project's migrations and their status
+```
+python manage.py showmigrations
+```
+  - Apps without migrations are also listed but have no migrations printed after them
+- Listing migrations and their status for a certain app
+```
+python manage.py showmigrations main_app
+```
+- You can choose a format to list: --list or-l
+```
+python manage.py showmigrations --list
+```
+**Optimizing Migrations Number and Size**
+
+- squashmigrations command
+  - Reducing an existing set of (many) migrations
+    - down to one or sometimes a few migrations
+    - still representing the same changes
+    ```
+    python manage.py squashmigrations main_app 0238
+    ```
+  - You need to pass the app name and the migration number/name
+    - all previous migrations will be squashed
+   
+**SQL Representation of a Migration**
+
+- sqlmigrate command
+  - Prints the SQL for the named migration
+    - requires an active database connection
+    - must be generated against a copy of the database on which later to be applied on
+    ```
+    python manage.py sqlmigrate main_app 0001_initial
+    ```
+  - You need to pass the app name and the migration number/name
+
+**Custom/Data Migrations**
+
+- Data Migrations
+  - Migrations that alter data
+  - Best written as separate migrations
+  - Sitting alongside your schema migrations
+- Use data migrations to change
+ - the data in the database itself
+ - in conjunction with the schema if you need that
+
+**Custom/Data Migrations (2)**
+
+- Django cannot automatically generate Data Migrations
+  - It is not very hard to write them manually
+- Migration files in Django are made up of Operations
+  - the main operation to use for data migrations is RunPython
+
+**Creating an Empty Migration**
+
+- By making an empty migration file Django will
+  - put the file in the right place
+  - suggest a name
+  - add dependencies
+  ```
+  python manage.py makemigrations --empty main_app
+  ```
+- You need to pass the app name
+
+**Empty Migration**
+
+- The empty migration file would look like this:
+```
+from django.db import migrations
+
+
+class Migration(migrations.Migration):
+  dependencies = [
+  ("main_app", "0002_employee_full_name"),
+  ]
+  operations = []
+```
+**RunPython Usage**
+
+- Create a function and have RunPython use it
+- RunPython expects a callable which takes two arguments app
+  - a registry of installed applications that
+    - stores configuration
+    - provides introspection
+    - maintains a list of available models
+  - has the historical versions of all models
+- SchemaEditor
+  - exposes operations as methods and turns code into SQL
+
+**Django Admin Site Introduction**
+
+- It is a built-in admin interface
+  - Where trusted users can manage site content
+ 
+**Access Django Admin Site**
+
+- First, create a superuser to log in with
+  ```
+  python manage.py createsuperuser
+  ```
+- Then, start the server and navigate to the admin site
+
+**Register Models**
+
+- Use the ModelAdminclass
+  - It represents the model in the admin site
+ 
+```
+from django.contrib import admin
+from main_app.models import Employee
+
+@admin.register(Employee)
+class EmployeeAdmin(admin.ModelAdmin):
+pass
+```
+
+**Customizing Django Admin Site**
+
+- Use the ModelAdminclass
+  - Use its options to customize the admin interface
+ 
+  ```
+  from django.contrib import admin
+  from main_app.models import Employee
+  @admin.register(Employee)
+  class EmployeeAdmin(admin.ModelAdmin):
+  …
+  ```
+  **ModelAdmin Options (1)**
+
+  - Display the model fields
+    ```
+    class EmployeeAdmin(admin.ModelAdmin):
+    list_display = ['job_title', 'first_name', 'email_address']
+    ```
+**ModelAdmin Options (2)**
+
+- Add filters to the models
+  ```
+  class EmployeeAdmin(admin.ModelAdmin):
+  list_filter = ['job_level']
+  ```
+
+**ModelAdmin Options (3)**
+
+- Add search box with field names that will be searched
+  ```
+  class EmployeeAdmin(admin.ModelAdmin):
+  search_fields = ['email_address']
+  ```
+**ModelAdmin Options (4)**
+
+- Make layout changes on "Add" and "Change" pages
+  ```
+  class EmployeeAdmin(admin.ModelAdmin):
+    fields = [('first_name', 'last_name'), 'email_address']
+  ```
+**ModelAdmin Options (5)**
+
+- Control the layout of "Add" and "Change" pages
+  ```
+  fieldsets = (
+    ('Personal info',
+      {'fields': (...)}),
+    ('Advanced options',
+      {'classes': ('collapse',),
+        'fields': (...),}),
+    )
+  ```
 
