@@ -144,6 +144,104 @@
 
 ## 04.Data Operations in Django with Queries
 
+- CRUD overview
+  - Използваме го при:
+    - Web Development
+    - Database Management
+  - Дава ни един консистентен начин, за това ние да създаваме фунцкионалност за CRUD
+  - Можем да го правим през ORM-a на Джанго
 
-  
+- Мениджър в Django:
+ - Атрибут на ниво клас на модел за взаимодействия с база данни.
+ - Отговорен за CRUD
+ - Custom Manager: Подклас models.Model.
+   - Защо персонализирани мениджъри:
+     - Капсулиране на общи или сложни заявки
+     - Подобрена четимост на кода.
+     - Избягваме повторенията и подобряваме повторната употреба.
+     - Промяна наборите от заявки според нуждите.
+- Django Queryset
+ - QuerySet - клас в пайтън, който използваме, за да пазим данните от дадена заявка.
+ - Данните не се взимат, докато не бъдат потърсени от нас.
+ - cars = Cars.objects.all() # <QuerySet []>
+ - print(cars) # <QuerySet [Car object(1)]>
+ - QuerySet Features:
+   - Lazy Evaluation - примера с колите, заявката не се вика, докато данните не потрябват
+   - Retrieving objects - можем да вземаме всички обекти или по даден критерии
+   - Chaining filters - MyModel.objects.filter(category='electronics').filter(price__lt=1000)
+   - query related objects - позволява ни да търсим в таблици, с които имаме релации, през модела:
+     #Query related objects using double underscores related_objects = Order.objects.filter(customer__age__gte=18) 
+   - Ordering - ordered_objects = Product.objects.order_by('-price')
+   - Pagination
+    ```
+    from django.core.paginator import Paginator
+
+    # Paginate queryset with 10 objects per page
+    paginator = Paginator(queryset, per_page=10)
+    page_number = 2
+    print([x for x in paginator.get_page(2)])
+   ```
+- Object Manager - default Objects
+- Methods:
+ - all()
+ - first()
+ - get(**kwargs)
+ - create(**kwargs)
+ - filter(**kwargs)
+ - order_by(*fields)
+ - delete()
+
+- Django Shell and SQL Logging
+ - Django Shell
+  - Дава ни достъп до целия проект
+  - python manage.py shell
+- SQL logging
+ - Enable SQL logging
+ ```
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',  # Other levels CRITICAL, ERROR, WARNING, INFO, DEBUG
+    },
+    'loggers': {
+        'django.db.backends': {  # responsible for the sql logs
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
+```
+---
+## 05.Working with queries
+
+- Useful Methods
+  - filter() - връща subset от обекти; приема kwargs; връща queryset;
+  - exclude() - връща subset от обекти; приема kwargs; връща queryset;
+  - order_by() - връща сортираните обекти; - за desc;
+  - count() - като len, но по-бързо; count връща само бройката без да му трябват реалните обекти;
+  - get() - взима един обект по даден критерии;
+- Chaning methods
+  - всеки метод работи с върнатия от предишния резултат
+- Lookup keys
+  - Използват се във filter, exclude, get;
+  - __exact __iexact - матчва точно;
+  - __contains __icontains - проверява дали съдържа;
+  - __startswith __endswith
+  - __gt __gte
+  - __lt __lte
+  - __range=(2, 5) - both inclusive
+- Bulk methods
+  - използват се за да извършим операции върху много обекти едновременно
+  - bulk_create - създава множество обекти навъеднъж;
+  - filter().update()
+  - filter().delete()
+
   
