@@ -335,3 +335,112 @@ class Employee(models.Model):
     supervisor = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
 ```
 - Lazy Relationships - обекта от релацията се взима, чрез заявка, чак когато бъде повикан
+
+---
+## 07.Models Inheritance and Customization
+
+- Типове наследяване
+  - Multi-table
+    - Разширяваме модел с полетата от друг модел, като не копираме самите полета, а използваме създадения от django pointer, който прави One-To-One Relationship
+    - Пример:
+```
+class Person(models.Model):
+    name = models.CharField(max_length=100)
+    date_of_birth = models.DateField()
+    
+    def is_student(self):
+        """Check if this person is also a student."""
+        return hasattr(self, 'student')
+
+class Student(Person):
+    student_id = models.CharField(max_length=15)
+    major = models.CharField(max_length=50)
+```
+ - Abstract Base Classes
+   - При това наследяване не се създават две нови таблици, а само една и тя е на наследяващия клас(Child), като абстрактния клас(Parent) е само шаблон
+   - Постигаме го чрез промяна на Meta класа:
+```
+class AbstractBaseModel(models.Model):
+    common_field1 = models.CharField(max_length=100)
+    common_field2 = models.DateField()
+
+    def common_method(self):
+        return "This is a common method"
+
+    class Meta:
+        abstract = True
+```
+
+- Proxy Models
+  - Използваме ги, за да добавим функционалност към модел, който не можем да достъпим
+  - Можем да добавяме методи, но не и нови полета
+  - Пример:
+```
+class Article(models.Model):
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    published_date = models.DateField()
+
+class RecentArticle(Article):
+    class Meta:
+        proxy = True
+
+    def is_new(self):
+        return self.published_date >= date.today() - timedelta(days=7)
+    
+    @classmethod
+    def get_recent_articles(cls):
+        return cls.objects.filter(published_date__gte=date.today() - timedelta(days=7))
+```
+
+- Основни Built-In Методи
+  - save() - използва се за запазване на записи
+```
+    def save(self, *args, **kwargs):
+        # Check the price and set the is_discounted field
+        if self.price < 5:
+            self.is_discounted = True
+        else:
+            self.is_discounted = False
+
+        # Call the "real" save() method
+        super().save(*args, **kwargs)
+```
+
+  - clean() - използва се, когато искаме да валидираме логически няколко полета, например имаме тениска в 3 цвята, но ако е избран XXL цветовете са само 2.
+
+- Custom Model Properties
+  - Както и в ООП, можем чрез @property декоратора да правим нови атрибути, които в случая не се запазват в базата
+  - Използваме ги за динамични изчисления на стойностти
+
+- Custom Model Fields
+  - Ползваме ги когато, Django няма field, който ни върши работа
+  - Имаме методи като:
+    - from_db_value - извиква се, когато искаме да взмем стойността от базата в пайтън
+    - to_python - извиква се когато правим десериализация или clean
+    - get_prep_value - обратното на from_db_value, от Python към базата, предимно ползваме за сериализации
+    - pre_save - използва се за last minute changes, точно преди да запазим резултата в базата
+   
+```
+class RGBColorField(models.TextField):
+    # Convert the database format "R,G,B" to a Python tuple (R, G, B)
+    def from_db_value(self, value, expression, connection):
+        if value is None:
+            return value
+        return tuple(map(int, value.split(',')))
+
+    # Convert any Python value to our desired format (tuple)
+    def to_python(self, value):
+        if isinstance(value, tuple) and len(value) == 3:
+            return value
+        if isinstance(value, str):
+            return tuple(map(int, value.split(',')))
+        raise ValidationError("Invalid RGB color format.")
+
+    # Prepare the tuple format for database insertion
+    def get_prep_value(self, value):
+        # Convert tuple (R, G, B) to "R,G,B" for database storage
+        return ','.join(map(str, value))
+```
+---
+
