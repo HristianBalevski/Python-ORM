@@ -611,7 +611,7 @@ users = User.objects.filter(Q(age__lt=30) | Q(username='admin'))
 Използване на Subqueries:
 
 - **Subqueries:**
-  - Възможност за използване на подзаявки във вашия SQL, които да бъдат вградени в основната заявка.
+  - Възможност за използване на подзаявки във нашия SQL, които да бъдат вградени в основната заявка.
 ```
 from django.db.models import OuterRef, Subquery
 
