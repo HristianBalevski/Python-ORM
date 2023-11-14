@@ -730,6 +730,7 @@ User.posts = relationship('Post', back_populates='user')
 User.posts = relationship('Post', back_populates='user', innerjoin=True)
 ```
 - Агрегации с **func**:
+
 ```
 from sqlalchemy import func
 
