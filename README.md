@@ -535,7 +535,7 @@ class TimestampMixin(models.Model):
     	    abstract = True
 ```
 ---
-## Advanced Queries in Django
+## 09.Advanced Queries in Django
 1. What is Manager
    - В Django, Manager представлява интерфейс за взаимодействие с данни в моделите. Той дава възможност за извършване на заявки към базата данни и манипулиране на обекти, представляващи записи в тази база. Всеки Django модел по подразбиране има вече създаден мениджър, достъпен чрез objects, но може да бъде създаден и персонализиран Manager за конкретни нужди.
 
@@ -654,3 +654,95 @@ for author in authors:
 Като цяло, **related_name** се използва за именуване на обратната връзка и улеснява достъпа до свързаните обекти, докато **prefetch_related** подобрява ефективността, като оптимизира заявките към базата данни, извличайки данните за свързаните обекти предварително. Обичайно се използват заедно, когато искаме да оптимизираме заявките и лесно да обхождаме данните в нашия код.
 
 ---
+## 10.SQLAlchemy
+
+SQLAlchemy е популярна библиотека за работа с релационни бази данни в Python. Тя предоставя ORM слой, който позволява работата с базите данни чрез обекти, а не директно с SQL заявки. SQLAlchemy осигурява гъвкавост и абстракция, позволявайки разработчиците да избират нивото на абстракция, което искат да използват.
+
+Декларативен и Класически ORM:
+
+- **Декларативен ORM:**
+  - Позволява дефинирането на модели чрез декларация на клас с помощта на **declarative_base**
+```
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String)
+    email = Column(String)
+
+engine = create_engine('sqlite:///:memory:')
+Base.metadata.create_all(engine)
+```
+- **Класически ORM:**
+  - Използва стандартния начин за дефиниране на класове, без използването на **declarative_base**
+```
+from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy.orm import sessionmaker
+
+class User:
+    def __init__(self, username, email):
+        self.username = username
+        self.email = email
+
+engine = create_engine('sqlite:///:memory:')
+```
+Заявки и филтриране с SQLAlchemy:
+
+- Създаване на обекти и добавяне към базата данни:
+```
+Session = sessionmaker(bind=engine)
+session = Session()
+
+new_user = User(username='john_doe', email='john@example.com')
+session.add(new_user)
+session.commit()
+```
+
+- Извличане на данни с филтри:
+```
+# Извличане на всички потребители
+all_users = session.query(User).all()
+
+# Филтриране по условие
+john = session.query(User).filter_by(username='john_doe').first()
+```
+Връзки и Агрегации:
+
+- Външни и вътрешни връзки:
+```
+class Post(Base):
+    __tablename__ = 'posts'
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String)
+    user_id = Column(Integer, ForeignKey('users.id'))
+
+# Външна връзка
+User.posts = relationship('Post', back_populates='user')
+
+# Вътрешна връзка
+User.posts = relationship('Post', back_populates='user', innerjoin=True)
+```
+- Агрегации с **func**:
+```
+from sqlalchemy import func
+
+# Извличане на брой постове за всеки потребител
+user_post_count = session.query(User.username, func.count(Post.id)).join(Post).group_by(User.username).all()
+```
+Използване на Raw SQL:
+
+- Използване на **text()** за суров SQL:
+```
+from sqlalchemy import text
+
+# Извличане на всички потребители с възраст под 30 или с потребителско име 'admin'
+users = session.query(User).filter(or_(text('age < 30'), text("username = 'admin'"))).all()
+```
+SQLAlchemy предоставя мощни възможности за взаимодействие с релационни бази данни, като предоставя обектно-релационно съпоставление (ORM) и гъвкави възможности за работа със суров SQL. Тя е чест избор за проекти, които изискват добра абстракция върху базата данни и гъвкавост в работата с данни.
