@@ -1,3 +1,9 @@
+My first steps with Django and Database
+
+[Click Here for more information about the course Python ORM](https://softuni.bg/trainings/4253/python-orm-october-2023)
+<br/>
+<br/>
+![Python ORM](https://github.com/HristianBalevski/Python-ORM/assets/114162692/f4d2e045-af4d-4008-85c0-2944621dcd67)
 ## 01.ORM Introduction
 
 - Object-Relational Mapping (ORM) е техника, която позволява на разработчиците да работят с релационни бази данни, използвайки обектно-ориентиран подход.
