@@ -2,7 +2,6 @@ import os
 import django
 from django.db.models import Q, Count, Avg
 
-
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
 django.setup()
 
