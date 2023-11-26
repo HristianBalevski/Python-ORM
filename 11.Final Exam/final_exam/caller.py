@@ -3,14 +3,10 @@ import django
 from django.db.models import Q, Count, Avg
 
 
-# Set up Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
 django.setup()
 
-# Import your models here
 from main_app.models import Author, Article, Review
-
-# Create and run your queries within functions
 
 
 def get_authors(search_name=None, search_email=None):
@@ -108,6 +104,3 @@ def ban_author(email=None):
     author.save()
 
     return f"Author: {author.full_name} is banned! {num_reviews} reviews deleted."
-
-
-print(get_top_reviewer())
