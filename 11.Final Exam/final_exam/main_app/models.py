@@ -30,3 +30,5 @@ class Review(BaseClassMixin):
     rating = models.FloatField(validators=[MinValueValidator(1.0), MaxValueValidator(5.0)])
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='author_reviews')
     article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='article_reviews')
+
+
