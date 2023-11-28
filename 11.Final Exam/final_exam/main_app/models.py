@@ -5,8 +5,6 @@ from main_app.managers import AuthorManager
 from main_app.mixins import BaseClassMixin
 
 
-# Create your models here.
-
 class Author(models.Model):
     full_name = models.CharField(max_length=100, validators=[MinLengthValidator(3)])
     email = models.EmailField(unique=True)
@@ -32,5 +30,3 @@ class Review(BaseClassMixin):
     rating = models.FloatField(validators=[MinValueValidator(1.0), MaxValueValidator(5.0)])
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name='author_reviews')
     article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='article_reviews')
-
-
